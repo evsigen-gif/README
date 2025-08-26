@@ -1,0 +1,74 @@
+from piggy_bank import PiggyBank
+
+def main():
+    piggybank = PiggyBank()
+    piggybank.load_from_file()
+
+    while True:
+        print("\nМеню:")
+        print("1. Добавить новую цель")
+        print("2. Пополнить или снять средства")
+        print("3. Показать все цели")
+        print("4. Удалить цель")
+        print("5. Общий прогресс")
+        print("6. Выйти")
+        choice = input("Выберите действие (1-6): ")
+        if choice == '1':
+            name = input("Название цели: ")
+            try:
+                total_amount = float(input("Сумма цели (руб.): "))
+                if total_amount <= 0:
+                    print("Введите положительное число.")
+                    continue
+            except ValueError:
+                print("Введите корректное число.")
+            print('Категории:', ', '.join(piggybank.categories))
+            category = input("Категория цели: ")
+            date_target = input("Введите дату завершения цели (YYYY-MM-DD, можно пропустить): ")
+            category = category.capitalize()
+            piggybank.add_goal(name.capitalize(), total_amount, category.title(), date_target)
+            piggybank.save_to_file()
+
+        elif choice == '2':
+            name = input("Название цели: ")
+            operation = input("Нажмите 1 если хотите пополнить цель или 2 если хотите списать: ")
+            goal = piggybank.find_goal(name.capitalize())
+            if operation == '1':
+                if goal:
+                    amount = float(input("Сумма для пополнения (руб.): "))
+                    goal.add_money(amount)
+                    if goal.current_balance >= goal.total_amount:
+                        print('\nЦель выполнена. ПОЗДРАВЛЯЮ!!!')
+                    else:
+                        print(goal.remind_if_due())
+                        print(f'\nБаланс цели "{name.capitalize()}": "{goal.current_balance}".')
+                    piggybank.save_to_file()
+                else:
+                    print('\nЦель не найдена.')
+            if operation == '2':
+                if goal:
+                    amount = float(input("Сумма для снятия (руб.): "))
+                    goal.withdraw_money(amount)
+                    print(f'\nБаланс цели "{name}": "{goal.current_balance}".')
+                    piggybank.save_to_file()
+                else:
+                    print('\nЦель не найдена.')
+        elif choice == '3':
+            piggybank.show_goals()
+
+        elif choice == '4':
+            name = input("Название цели для удаления: ")
+            piggybank.remove_goal(name.capitalize())
+            piggybank.save_to_file()
+        elif choice == '5':
+            print(f'\nОбщий прогресс по всем целям: {piggybank.overall_progress():.1f}%')
+        elif choice == '6':
+            piggybank.save_to_file()
+            print('Выход из программы')
+            break
+        else:
+            print("\nНеверный выбор, попробуйте снова.")
+
+
+if __name__ == "__main__":
+    main()
